@@ -25,9 +25,11 @@ class SysAdminRunner(object):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate base configs for sysadmin")
+    parser = argparse.ArgumentParser(
+        description="Generate base configs for sysadmin")
     parser.add_argument("factory_settings", type=str,
-                        help="File containing base factory settings in sysadmin-agnostic format")
+                        help="File containing base factory settings in "
+                             "sysadmin-agnostic format")
     parser.add_argument("--config_file", type=str,
                         help="sysadmin config file for factory settings")
     parser.add_argument("--migration_logs", type=str,

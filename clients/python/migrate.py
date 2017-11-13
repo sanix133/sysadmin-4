@@ -12,8 +12,10 @@ from sysadmin.Migrations import SysAdminMigrator
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Migrate sysadmin keys",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description="Migrate sysadmin keys",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("migration_file", type=str,
                         help="Absolute path to migration file or directory")
     parser.add_argument("--migration_logs", type=str,

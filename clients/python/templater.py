@@ -21,7 +21,7 @@ def main():
     lazy = LazySysAdmin(SysAdminClient("127.0.0.1", 4000))
     lazy.prefetch()
     renderer = ConfigTemplateRenderer(args.template)
-    fullArgs = {'values':lazy}
+    fullArgs = {'values': lazy}
     fullArgs['args'] = getattr(args, 'template_args', None)
     fullArgs['committed'] = getattr(args, 'committed', None)
     rendered = renderer.renderTemplate(fullArgs)
@@ -30,7 +30,7 @@ def main():
     try:
         if not os.path.exists(dirname):
             os.makedirs(dirname)
-    except OSError as e:
+    except OSError:
         print "Error making dirs for template %s" % args.dest
     with open(args.dest, "w") as f:
         f.write(rendered)

@@ -1,21 +1,11 @@
 import json
 import os
-import pkgutil
 
 from jinja2 import Environment
 from jinja2 import FileSystemBytecodeCache
 from jinja2 import FileSystemLoader
 
-
-class ThunkHelpers(object):
-    pass
-
-
-if len(filter(lambda info: info[1] == 'sysadmin_helpers', pkgutil.iter_modules())):
-    from sysadmin_helpers import helpers
-else:
-    print "Could not find sysadmin helpers, thunking..."
-    helpers = ThunkHelpers
+from sysadmin import helpers
 
 
 CACHE_DIR = "/tmp/sysadmin_jinja_cache"

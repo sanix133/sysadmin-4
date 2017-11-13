@@ -51,14 +51,14 @@ class MigrationLog(object):
 
 
 def nested_setter(sysadmin, config, op):
-        def inner_set_configs(current, key_prefix):
-            for k, v in current.iteritems():
-                key = k if key_prefix == '' else '.'.join([key_prefix, k])
-                if isinstance(v, dict):
-                    inner_set_configs(v, key)
-                else:
-                    op(sysadmin, key, v)
-        inner_set_configs(config, '')
+    def inner_set_configs(current, key_prefix):
+        for k, v in current.iteritems():
+            key = k if key_prefix == '' else '.'.join([key_prefix, k])
+            if isinstance(v, dict):
+                inner_set_configs(v, key)
+            else:
+                op(sysadmin, key, v)
+    inner_set_configs(config, '')
 
 
 class SysAdminMigrator(object):

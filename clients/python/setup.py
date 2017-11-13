@@ -5,9 +5,19 @@ import os
 import shutil
 import subprocess
 import sys
+
+from setuptools import setup
+
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from distutils.spawn import find_executable
+
+
+with open('requirements.txt', 'r') as requirements_file:
+    REQUIREMENTS = list(requirements_file)
+
+with open('dev-requirements.txt', 'r') as dev_requirements_file:
+    DEV_REQUIREMENTS = list(dev_requirements_file)
 
 
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
@@ -28,7 +38,7 @@ def generate_proto(source_file, generated_dir):
         os.makedirs(generated_dir)
         open(os.path.join(generated_dir, '__init__.py'), 'w+').close()
     protoc_command = [protoc,
-                      '-Isysadmin-api',
+                      '-I../../sysadmin-api',
                       "--python_out=%s" % generated_dir,
                       source_file]
     if subprocess.call(protoc_command) != 0:
@@ -47,32 +57,38 @@ def clean_command(generated_dir):
 def build_command(generated_dir):
     class Build(_build):
         def run(self):
-            for proto_file in glob.glob(os.path.join("sysadmin-api",
+            for proto_file in glob.glob(os.path.join("../../sysadmin-api",
                                                      "*.proto")):
                 generate_proto(proto_file, generated_dir)
             _build.run(self)
     return Build
 
 
-from setuptools import setup
-
 GENERATED_DIR = os.path.join('sysadmin', 'generated')
 
-setup(name='sysadmin',
-      version='2.6.0',
-      description='Control sysadmin',
-      cmdclass={
-          'build': build_command(GENERATED_DIR),
-          'clean': clean_command(GENERATED_DIR),
-      },
-      packages=[
-          'sysadmin',
-          'sysadmin.generated'
-      ],
-      scripts=[
-          'sysadminctl',
-          'templater.py',
-          'gen-factory-settings.py',
-          'migrate.py',
-      ]
-      )
+setup(
+    name='sysadmin',
+    version='1.0.1',
+    description='Control sysadmin',
+    install_requires=REQUIREMENTS,
+    extras_require={'test': DEV_REQUIREMENTS},
+    cmdclass={
+        'build': build_command(GENERATED_DIR),
+        'clean': clean_command(GENERATED_DIR),
+    },
+    packages=[
+        'sysadmin',
+        'sysadmin.generated'
+    ],
+    scripts=[
+        'sysadminctl',
+        'templater.py',
+        'gen-factory-settings.py',
+        'migrate.py',
+    ],
+    classifiers=[
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7'
+    ]
+  )

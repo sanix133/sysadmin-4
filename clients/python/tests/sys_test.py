@@ -93,18 +93,24 @@ class NoHooksSysAdminTest(SysAdminFixture):
         client.set("wireless.wl0.enabled", True)
         client.set("wireless.wl0.frequencies", [1, 2, 3])
         client.commit()
-        self.assertEqual(60, UnpackFromProto(client.get("wireless.wl0.channel").get.kvs[0].value))
-        self.assertEqual("password", UnpackFromProto(client.get("wireless.wl0.psk").get.kvs[0].value))
-        self.assertEqual(True, UnpackFromProto(client.get("wireless.wl0.enabled").get.kvs[0].value))
-        self.assertEqual([1, 2, 3], UnpackFromProto(client.get("wireless.wl0.frequencies").get.kvs[0].value))
+        self.assertEqual(60, UnpackFromProto(
+            client.get("wireless.wl0.channel").get.kvs[0].value))
+        self.assertEqual("password", UnpackFromProto(
+            client.get("wireless.wl0.psk").get.kvs[0].value))
+        self.assertEqual(True, UnpackFromProto(
+            client.get("wireless.wl0.enabled").get.kvs[0].value))
+        self.assertEqual([1, 2, 3], UnpackFromProto(
+            client.get("wireless.wl0.frequencies").get.kvs[0].value))
 
     def test_basic_drop(self):
         client = SysAdminClient("127.0.0.1", 4000)
         client.set("wireless.wl0.psk", "password")
         client.set("wireless.wl0.channel", 40)
         client.drop()
-        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND, client.get("wireless.wl0.psk").status)
-        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND, client.get("wireless.wl0.channel").status)
+        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND,
+                         client.get("wireless.wl0.psk").status)
+        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND,
+                         client.get("wireless.wl0.channel").status)
 
     def test_type_checking(self):
         client = SysAdminClient("127.0.0.1", 4000)
@@ -115,7 +121,8 @@ class NoHooksSysAdminTest(SysAdminFixture):
         resp = client.set("wireless.wl0.psk", "password")
         self.assertEqual(sysadminctl_pb2.TYPE_MISMATCH, resp.status)
         client.commit()
-        self.assertEqual(5, UnpackFromProto(client.get("wireless.wl0.psk").get.kvs[0].value))
+        self.assertEqual(5, UnpackFromProto(
+            client.get("wireless.wl0.psk").get.kvs[0].value))
 
     def test_erase(self):
         client = SysAdminClient("127.0.0.1", 4000)
@@ -124,12 +131,15 @@ class NoHooksSysAdminTest(SysAdminFixture):
         client.set("wireless.wl0.enabled", True)
         client.set("wireless.wl0.frequencies", [1, 2, 3])
         client.commit()
-        self.assertEqual("password", UnpackFromProto(client.get("wireless.wl0.psk").get.kvs[0].value))
+        self.assertEqual("password", UnpackFromProto(
+            client.get("wireless.wl0.psk").get.kvs[0].value))
         client.erase("wireless.wl0.psk")
-        self.assertEqual("password", UnpackFromProto(client.get("wireless.wl0.psk").get.kvs[0].value))
+        self.assertEqual("password", UnpackFromProto(
+            client.get("wireless.wl0.psk").get.kvs[0].value))
         client.erase("not.a.key")
         client.commit()
-        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND, client.get("wireless.wl0.psk").status)
+        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND,
+                         client.get("wireless.wl0.psk").status)
 
 
 class TemplateSysAdminTest(SysAdminFixture):
@@ -155,7 +165,7 @@ class TemplateSysAdminTest(SysAdminFixture):
         client.commit()
         self.assertFileExistsTimeout("test.conf")
         self.assertRenderedTemplateMatches(
-"""dhcp-range=192.168.1.1,192.168.1.100,1440
+            """dhcp-range=192.168.1.1,192.168.1.100,1440
 dhcp-authoritative
 interfaces=eth0,eth1,
 breakfast=waffles
@@ -222,7 +232,7 @@ class FireAllHooksTest(SysAdminFixture):
         self.assertFileExistsTimeout("test.conf")
         self.assertFileExistsTimeout("argdumper")
         self.assertRenderedTemplateMatches(
-"""dhcp-range=192.168.1.1,192.168.1.100,1440
+            """dhcp-range=192.168.1.1,192.168.1.100,1440
 dhcp-authoritative
 interfaces=eth0,eth1,
 breakfast=waffles\n""", "test.conf")
@@ -259,9 +269,12 @@ class FetchingTest(SysAdminFixture):
         client.commit()
         output = FetchAllValues(["network.dhcp.startip", "network.dhcp.lease",
                                  "network.dhcp.interfaces"])
-        self.assertEqual(output, {"network": {"dhcp": {"startip": "192.168.1.1",
-                                                       "lease": 1440,
-                                                       "interfaces": [u"eth0", u"eth1"]}}})
+        dhcp = {
+            "startip": "192.168.1.1",
+            "lease": 1440,
+            "interfaces": [u"eth0", u"eth1"]
+        }
+        self.assertEqual(output, {"network": {"dhcp": dhcp}})
 
 
 class GetAllKeysTest(SysAdminFixture):
@@ -284,7 +297,8 @@ class GetAllKeysTest(SysAdminFixture):
         self.assertEqual(set(["network.dhcp.startip", "network.dhcp.endip",
                               "network.dhcp.interfaces"]),
                          resp)
-        resp = map(lambda x: UnpackFromProto(x.value), client.get("network.dhcp.*").get.kvs)
+        resp = map(lambda x: UnpackFromProto(x.value),
+                   client.get("network.dhcp.*").get.kvs)
         self.assertEqual(3, len(resp))
         self.assertTrue("192.168.1.1" in resp)
         self.assertTrue("192.168.1.100" in resp)
@@ -294,7 +308,8 @@ class GetAllKeysTest(SysAdminFixture):
                               "network.dhcp.interfaces", "network.breakfast",
                               "network.lease"]),
                          resp)
-        resp = map(lambda x: UnpackFromProto(x.value), client.get("network.*").get.kvs)
+        resp = map(lambda x: UnpackFromProto(x.value),
+                   client.get("network.*").get.kvs)
         self.assertEqual(5, len(resp))
         self.assertTrue("192.168.1.1" in resp)
         self.assertTrue("192.168.1.100" in resp)
@@ -322,19 +337,24 @@ class MigrationTest(SysAdminFixture):
         m = SysAdminMigrator(client)
         m.new_keys({"new.key": "value"})
         client.commit()
-        self.assertEqual("value", UnpackFromProto(client.get("new.key").get.kvs[0].value))
+        self.assertEqual("value", UnpackFromProto(
+            client.get("new.key").get.kvs[0].value))
         m.change_values({"new.key": "4"})
         client.commit()
-        self.assertEqual("4", UnpackFromProto(client.get("new.key").get.kvs[0].value))
+        self.assertEqual("4", UnpackFromProto(
+            client.get("new.key").get.kvs[0].value))
         m.change_types({"new.key": "int32"})
         client.commit()
-        self.assertEqual(4, UnpackFromProto(client.get("new.key").get.kvs[0].value))
+        self.assertEqual(4, UnpackFromProto(
+            client.get("new.key").get.kvs[0].value))
         m.rename_keys([{"new.key": "renamed.key"}])
         client.commit()
-        self.assertEqual(4, UnpackFromProto(client.get("renamed.key").get.kvs[0].value))
+        self.assertEqual(4, UnpackFromProto(
+            client.get("renamed.key").get.kvs[0].value))
         m.remove_keys(["new.key"])
         client.commit()
-        self.assertEqual(4, UnpackFromProto(client.get("renamed.key").get.kvs[0].value))
+        self.assertEqual(4, UnpackFromProto(
+            client.get("renamed.key").get.kvs[0].value))
 
     def test_change_types(self):
         client = SysAdminClient("127.0.0.1", 4000)
@@ -343,37 +363,46 @@ class MigrationTest(SysAdminFixture):
         client.commit()
         m.change_types({"gonna.be.list": "stringlist"})
         client.commit()
-        self.assertEqual(["value"], UnpackFromProto(client.get("gonna.be.list").get.kvs[0].value))
+        self.assertEqual(["value"], UnpackFromProto(
+            client.get("gonna.be.list").get.kvs[0].value))
         m.change_types({"gonna.be.list": "str"})
         client.commit()
-        self.assertEqual("value", UnpackFromProto(client.get("gonna.be.list").get.kvs[0].value))
+        self.assertEqual("value", UnpackFromProto(
+            client.get("gonna.be.list").get.kvs[0].value))
         m.new_keys({"gonna.be.intlist": "4"})
         client.commit()
         m.change_types({"gonna.be.intlist": "int32list"})
         client.commit()
-        self.assertEqual([4], UnpackFromProto(client.get("gonna.be.intlist").get.kvs[0].value))
+        self.assertEqual([4], UnpackFromProto(
+            client.get("gonna.be.intlist").get.kvs[0].value))
         m.change_types({"gonna.be.intlist": "str"})
         client.commit()
-        self.assertEqual("4", UnpackFromProto(client.get("gonna.be.intlist").get.kvs[0].value))
+        self.assertEqual("4", UnpackFromProto(
+            client.get("gonna.be.intlist").get.kvs[0].value))
         m.new_keys({"gonna.be.boollist": "true"})
         client.commit()
         m.change_types({"gonna.be.boollist": "boollist"})
         client.commit()
-        self.assertEqual([True], UnpackFromProto(client.get("gonna.be.boollist").get.kvs[0].value))
+        self.assertEqual([True], UnpackFromProto(
+            client.get("gonna.be.boollist").get.kvs[0].value))
         m.change_types({"gonna.be.boollist": "str"})
         client.commit()
-        self.assertEqual("True", UnpackFromProto(client.get("gonna.be.boollist").get.kvs[0].value))
+        self.assertEqual("True", UnpackFromProto(
+            client.get("gonna.be.boollist").get.kvs[0].value))
         m.new_keys({"long.list": ["stringlist", "4", "5", "6"]})
         client.commit()
         m.change_types({"long.list": "int32list"})
         client.commit()
-        self.assertEqual([4, 5, 6], UnpackFromProto(client.get("long.list").get.kvs[0].value))
+        self.assertEqual([4, 5, 6], UnpackFromProto(
+            client.get("long.list").get.kvs[0].value))
         m.change_types({"long.list": "int32list"})
         client.commit()
-        self.assertEqual([4, 5, 6], UnpackFromProto(client.get("long.list").get.kvs[0].value))
+        self.assertEqual([4, 5, 6], UnpackFromProto(
+            client.get("long.list").get.kvs[0].value))
         m.change_types({"long.list": "stringlist"})
         client.commit()
-        self.assertEqual(["4", "5", "6"], UnpackFromProto(client.get("long.list").get.kvs[0].value))
+        self.assertEqual(["4", "5", "6"], UnpackFromProto(
+            client.get("long.list").get.kvs[0].value))
 
 
 class ClientIdTest(SysAdminFixture):
@@ -392,11 +421,15 @@ class ClientIdTest(SysAdminFixture):
         otherclient = SysAdminClient("127.0.0.1", 4000, 0)
         # This client can't commit the original clients changes
         otherclient.commit()
-        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND, client.get("network.dhcp.startip").status)
-        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND, client.get("network.dhcp.endip").status)
+        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND,
+                         client.get("network.dhcp.startip").status)
+        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND,
+                         client.get("network.dhcp.endip").status)
         client.commit()
-        self.assertEqual("192.168.1.1", UnpackFromProto(client.get("network.dhcp.startip").get.kvs[0].value))
-        self.assertEqual("192.168.1.100", UnpackFromProto(client.get("network.dhcp.endip").get.kvs[0].value))
+        self.assertEqual("192.168.1.1", UnpackFromProto(
+            client.get("network.dhcp.startip").get.kvs[0].value))
+        self.assertEqual("192.168.1.100", UnpackFromProto(
+            client.get("network.dhcp.endip").get.kvs[0].value))
 
 
 class RollbackTest(SysAdminFixture):
@@ -416,19 +449,25 @@ class RollbackTest(SysAdminFixture):
         client.set("network.dhcp.endip", "10.0.0.100")
         self.assertEqual(2, client.commit().commit.commit_id)
         # Can't rollback the first commit
-        self.assertEqual(sysadminctl_pb2.FAILED_ROLLBACK, client.rollback(1).status)
+        self.assertEqual(sysadminctl_pb2.FAILED_ROLLBACK,
+                         client.rollback(1).status)
         self.assertEqual(sysadminctl_pb2.SUCCESS, client.rollback(2).status)
-        self.assertEqual("192.168.1.1", UnpackFromProto(client.get("network.dhcp.startip").get.kvs[0].value))
-        self.assertEqual(sysadminctl_pb2.FAILED_ROLLBACK, client.rollback(100).status)
+        self.assertEqual("192.168.1.1", UnpackFromProto(
+            client.get("network.dhcp.startip").get.kvs[0].value))
+        self.assertEqual(sysadminctl_pb2.FAILED_ROLLBACK,
+                         client.rollback(100).status)
 
     def test_new_key_rollback(self):
-        #make a commit with a new key and value, ensure that a rollback can remove the key
+        # make a commit with a new key and value, ensure that a rollback can
+        # remove the key
         client = SysAdminClient("127.0.0.1", 4000)
         client.set("cheese", 42)
         self.assertEqual(1, client.commit().commit.commit_id)
-        self.assertEqual(42, UnpackFromProto(client.get("cheese").get.kvs[0].value))
+        self.assertEqual(42, UnpackFromProto(
+            client.get("cheese").get.kvs[0].value))
         self.assertEqual(sysadminctl_pb2.SUCCESS, client.rollback(1).status)
-        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND, client.get("cheese").status)
+        self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND,
+                         client.get("cheese").status)
 
 
 class ResetTest(SysAdminFixture):
@@ -453,7 +492,8 @@ class ResetTest(SysAdminFixture):
         client.reset()
         resp = client.get("network.dhcp.startip")
         self.assertEqual(sysadminctl_pb2.KEY_NOT_FOUND, resp.status)
-        self.assertEqual("waffles", UnpackFromProto(client.get("network.breakfast").get.kvs[0].value))
+        self.assertEqual("waffles", UnpackFromProto(
+            client.get("network.breakfast").get.kvs[0].value))
 
 
 class DumpHooksTest(SysAdminFixture):
@@ -494,9 +534,12 @@ class TriggerTest(SysAdminFixture):
         client.set("network.dhcp.breakfast", "waffles")
         client.set("network.dhcp.lease", 1440)
         client.commit()
-        self.assertEqual(sysadminctl_pb2.SUCCESS, client.trigger("test.conf").status)
-        self.assertEqual(sysadminctl_pb2.SUCCESS, client.trigger("testService").status)
-        self.assertEqual(sysadminctl_pb2.HOOK_NOT_FOUND, client.trigger("nonExist").status)
+        self.assertEqual(sysadminctl_pb2.SUCCESS,
+                         client.trigger("test.conf").status)
+        self.assertEqual(sysadminctl_pb2.SUCCESS,
+                         client.trigger("testService").status)
+        self.assertEqual(sysadminctl_pb2.HOOK_NOT_FOUND,
+                         client.trigger("nonExist").status)
 
 
 class ClientWrapper(SysAdminClient):
@@ -535,9 +578,9 @@ class LazySysAdminTest(SysAdminFixture):
 
     def test_iteration(self):
         s = LazySysAdmin(ClientWrapper())
-        # This is an interesting thing to test because the act of iteration should
-        # save all the namespaces values in the lazy dictionary, and not require
-        # further fetches from sysadmin to access the sub values
+        # This is an interesting thing to test because the act of iteration
+        # should save all the namespaces values in the lazy dictionary, and not
+        # require further fetches from sysadmin to access the sub values
         for _ in s["network"]:
             pass
         self.assertEqual(2, s.sysadmin.call_counts["get"])
@@ -577,7 +620,8 @@ class LazySysAdminTest(SysAdminFixture):
     def test_list_iteration(self):
         s = LazySysAdmin(ClientWrapper())
         for iface in s["network"]["dhcp"]["interfaces"]:
-            # just confirming I'm getting a nice string value out of this iteration
+            # just confirming I'm getting a nice string value out of this
+            # iteration
             self.assertTrue("eth" in iface)
 
     def test_looping(self):
@@ -612,9 +656,12 @@ class LazySysAdminTest(SysAdminFixture):
 
     def test_get_default(self):
         s = LazySysAdmin(ClientWrapper())
-        self.assertEqual("192.168.1.1", s["network"]["dhcp"].get("startip", ""))
-        self.assertEqual("192.168.1.100", s["network"]["dhcp"].get("endip", ""))
-        self.assertEqual(["eth0", "eth1"], s["network"]["dhcp"].get("interfaces", ""))
+        self.assertEqual(
+            "192.168.1.1", s["network"]["dhcp"].get("startip", ""))
+        self.assertEqual(
+            "192.168.1.100", s["network"]["dhcp"].get("endip", ""))
+        self.assertEqual(["eth0", "eth1"], s["network"]
+                         ["dhcp"].get("interfaces", ""))
         self.assertFalse(s["network"]["dhcp"].get("notreal", False))
         self.assertTrue(s["network"].get("dhcp", True))
 
